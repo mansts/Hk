@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Теория Бромлея</title>
+<style>
+  :root {
+    --bg: #FAF8F5;
+    --surface: #FFFFFF;
+    --surface-muted: #F3EFEA;
+    --text: #1A1A1A;
+    --text-muted: #525252;
+    --accent: #1E3A5F;
+    --accent-hover: #152944;
+    --border: #D6D1C9;
+    --correct-bg: #EBF5EE;
+    --correct-border: #2E7D32;
+    --wrong-bg: #FDECEA;
+    --wrong-border: #C62828;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-radius: 0 !important;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    line-height: 1.65;
+    font-size: 16px;
+  }
+
+  header {
+    border-bottom: 2px solid var(--accent);
+    background-color: var(--surface);
+    padding: 32px 20px;
+  }
+
+  .container {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 0 20px;
+  }
+
+  header .container {
+    padding: 0;
+  }
+
+  h1 {
+    margin: 0 0 8px 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 1rem;
+  }
+
+  main {
+    padding: 36px 0 60px 0;
+  }
+
+  section {
+    margin-bottom: 48px;
+  }
+
+  h2 {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.5rem;
+    color: var(--text);
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 8px;
+    margin: 0 0 20px 0;
+  }
+
+  h3 {
+    font-size: 1.1rem;
+    margin: 0 0 8px 0;
+    color: var(--accent);
+  }
+
+  p {
+    margin: 0 0 14px 0;
+  }
+
+  .card {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    margin-bottom: 16px;
+  }
+
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 16px;
+  }
+
+  @media (max-width: 680px) {
+    .grid-2 {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .box-outline {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--accent);
+    padding: 16px 20px;
+  }
+
+  .processes-list {
+    list-style: none;
+    padding: 0;
+    margin: 16px 0 0 0;
+    border: 1px solid var(--border);
+    background-color: var(--surface);
+  }
+
+  .processes-list li {
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .processes-list li:last-child {
+    border-bottom: none;
+  }
+
+  /* Hexagon Section */
+  .hex-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 540px;
+    height: 480px;
+    margin: 24px auto;
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+  }
+
+  .hex-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+
+  .hex-node {
+    position: absolute;
+    width: 44px;
+    height: 44px;
+    transform: translate(-50%, -50%);
+    background-color: var(--surface);
+    border: 2px solid var(--accent);
+    color: var(--accent);
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.15s, color 0.15s;
+    z-index: 2;
+  }
+
+  .hex-node:hover {
+    background-color: var(--surface-muted);
+  }
+
+  .hex-node.active {
+    background-color: var(--accent);
+    color: #FFFFFF;
+  }
+
+  .hex-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 240px;
+    text-align: center;
+    z-index: 1;
+    padding: 8px;
+  }
+
+  .hex-center-title {
+    font-weight: 700;
+    color: var(--accent);
+    font-size: 0.95rem;
+    margin-bottom: 6px;
+  }
+
+  .hex-center-text {
+    font-size: 0.88rem;
+    line-height: 1.45;
+    color: var(--text);
+  }
+
+  @media (max-width: 520px) {
+    .hex-wrapper {
+      height: 420px;
+    }
+    .hex-center {
+      width: 190px;
+    }
+    .hex-center-text {
+      font-size: 0.82rem;
+    }
+  }
+
+  /* Quiz Section */
+  .quiz-box {
+    background-color: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+
+  .quiz-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .quiz-weight {
+    font-weight: 700;
+    color: var(--accent);
+  }
+
+  .quiz-question {
+    font-size: 1.12rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+  }
+
+  .options-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .option-btn {
+    text-align: left;
+    background-color: var(--bg);
+    border: 1px solid var(--border);
+    padding: 13px 16px;
+    font-size: 0.98rem;
+    color: var(--text);
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.45;
+  }
+
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--accent);
+    background-color: var(--surface-muted);
+  }
+
+  .option-btn:disabled {
+    cursor: default;
+  }
+
+  .option-btn.correct {
+    background-color: var(--correct-bg);
+    border-color: var(--correct-border);
+    color: #1B431E;
+    font-weight: 600;
+  }
+
+  .option-btn.wrong {
+    background-color: var(--wrong-bg);
+    border-color: var(--wrong-border);
+    color: #7A1414;
+  }
+
+  .feedback-box {
+    padding: 14px 16px;
+    border-left: 4px solid var(--accent);
+    background-color: var(--surface-muted);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    display: none;
+  }
+
+  .feedback-box.visible {
+    display: block;
+  }
+
+  .quiz-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .nav-btn {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    cursor: pointer;
+    border: 1px solid var(--accent);
+    background-color: var(--surface);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .nav-btn.primary {
+    background-color: var(--accent);
+    color: #FFFFFF;
+  }
+
+  .nav-btn.primary:hover:not(:disabled) {
+    background-color: var(--accent-hover);
+  }
+
+  .nav-btn:hover:not(:disabled):not(.primary) {
+    background-color: var(--surface-muted);
+  }
+
+  .nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .result-screen {
+    text-align: center;
+    padding: 16px 0;
+  }
+
+  .grade-badge {
+    display: inline-block;
+    border: 2px solid var(--accent);
+    padding: 14px 28px;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin: 12px 0;
+    background-color: var(--bg);
+  }
+
+  .criteria-table {
+    width: 100%;
+    max-width: 420px;
+    margin: 20px auto;
+    border-collapse: collapse;
+    font-size: 0.92rem;
+  }
+
+  .criteria-table th,
+  .criteria-table td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+
+  .criteria-table th {
+    background-color: var(--surface-muted);
+  }
+
+  footer {
+    border-top: 1px solid var(--border);
+    background-color: var(--surface);
+    padding: 24px 20px;
+    text-align: center;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Теория Бромлея</h1>
+    <p class="subtitle">Дуалистическая концепция этноса в отечественной этнологии</p>
+  </div>
+</header>
+
+<main class="container">
+
+  <section>
+    <h2>Суть концепции</h2>
+    <p>Советский историк и этнограф Юлиан Владимирович Бромлей (1921–1990) предложил рассматривать народы не как биологические популяции, а как устойчивые социально-культурные общности. Главная идея его теории — разделение понятия «этнос» на два взаимосвязанных уровня.</p>
+
+    <div class="grid-2">
+      <div class="box-outline">
+        <h3>1. Этникос (узкий смысл)</h3>
+        <p>Совокупность людей, объединённых общим языком, культурой, исторической памятью и самосознанием («мы» и «они»). Этникос сохраняется даже тогда, когда люди расселены по разным странам и государствам.</p>
+      </div>
+      <div class="box-outline">
+        <h3>2. Этносоциальный организм — ЭСО (широкий смысл)</h3>
+        <p>Та часть этникоса, которая компактно живёт на одной территории и спаяна единым государством, экономикой и социальными институтами. На практике ЭСО чаще всего совпадает с понятием нации.</p>
+      </div>
+    </div>
+
+    <ul class="processes-list">
+      <li><strong>Консолидация</strong> — слияние нескольких близких по языку и культуре групп в один крупный народ.</li>
+      <li><strong>Ассимиляция</strong> — растворение малой группы внутри другого, более крупного народа с утратой прежнего языка и самосознания.</li>
+      <li><strong>Интеграция</strong> — сближение разных народов внутри одного государства при сохранении их культурных особенностей.</li>
+      <li><strong>Парциация</strong> — разделение единого народа на несколько самостоятельных частей (например, после миграции или изменения границ).</li>
+      <li><strong>Миксация</strong> — образование совершенно нового этноса путём смешения нескольких ранее не связанных народов.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Шесть фактов о теории</h2>
+    <div class="hex-wrapper">
+      <svg class="hex-svg" viewBox="0 0 540 480" preserveAspectRatio="none">
+        <polygon points="270,56 456,148 456,332 270,424 84,332 84,148" fill="none" stroke="#1E3A5F" stroke-width="2" />
+      </svg>
+
+      <button type="button" class="hex-node" style="top: 11.6%; left: 50%;" data-index="0">1</button>
+      <button type="button" class="hex-node" style="top: 30.8%; left: 84.4%;" data-index="1">2</button>
+      <button type="button" class="hex-node" style="top: 69.2%; left: 84.4%;" data-index="2">3</button>
+      <button type="button" class="hex-node" style="top: 88.3%; left: 50%;" data-index="3">4</button>
+      <button type="button" class="hex-node" style="top: 69.2%; left: 15.6%;" data-index="4">5</button>
+      <button type="button" class="hex-node" style="top: 30.8%; left: 15.6%;" data-index="5">6</button>
+
+      <div class="hex-center" id="hexCenter"></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Почему это важно понимать сегодня</h2>
+    <div class="card">
+      <h3>Переезд не отменяет принадлежность</h3>
+      <p>Если семья уезжает учиться или работать за границу, она выходит из состава своего ЭСО (экономики и законов родной страны), но остаётся внутри этникоса благодаря языку, традициям и самоопределению.</p>
+    </div>
+    <div class="card">
+      <h3>Главный спор в науке: Бромлей против Гумилёва</h3>
+      <p>Лев Гумилёв считал, что народы рождаются и гибнут из-за космических излучений и биологических импульсов («пассионарности»). Бромлей доказывал обратное: судьбу народа определяют не гены и космос, а школа, язык, экономика и культура, которые создают сами люди.</p>
+    </div>
+    <div class="card">
+      <h3>Интеграция вместо растворения</h3>
+      <p>Бромлей чётко разграничил ассимиляцию и интеграцию. В первом случае человек теряет свои корни и полностью перенимает чужую культуру, во втором — разные народы свободно взаимодействуют в общем пространстве, сохраняя собственный язык и традиции.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Проверка знаний</h2>
+    <div class="quiz-box" id="quizContainer"></div>
+  </section>
+
+</main>
+
+<footer>
+  Интерактивный сайт по теории Бромлея ученика 10-го класса Болатхан Мансур
+</footer>
+
+<script>
+  const hexFacts = [
+    {
+      title: "1. Граница проходит в сознании",
+      text: "Главным маркером этноса Бромлей считал самосознание: человек сам отвечает на вопрос, к какому народу он принадлежит, отделяя «своих» от «других»."
+    },
+    {
+      title: "2. Гены не определяют народ",
+      text: "Этнос — это социальное, а не биологическое явление. Внутри одного народа могут жить люди с разным происхождением, если их объединяют язык и культура."
+    },
+    {
+      title: "3. Двадцать лет научной полемики",
+      text: "Спор Бромлея с Львом Гумилёвым стал самым известным противостоянием в советской исторической науке 1970–1980-х годов."
+    },
+    {
+      title: "4. Перевод на мировые языки",
+      text: "Монография «Очерки теории этноса» (1983) была переведена на английский, французский и другие языки и вошла в учебники по антропологии."
+    },
+    {
+      title: "5. Культурный слой и ядро",
+      text: "Бромлей показал, что внешняя культура (одежда, техника) меняется быстро, а этническое ядро (язык, фольклор, нормы поведения) сохраняется веками."
+    },
+    {
+      title: "6. Прикладное значение",
+      text: "Понятия «этникос» и «ЭСО» до сих пор используются при проведении переписей населения и разработке языковой политики."
+    }
+  ];
+
+  const hexNodes = document.querySelectorAll('.hex-node');
+  const hexCenter = document.getElementById('hexCenter');
+
+  hexNodes.forEach(node => {
+    node.addEventListener('click', () => {
+      const idx = Number(node.getAttribute('data-index'));
+      hexNodes.forEach(n => n.classList.remove('active'));
+      node.classList.add('active');
+      hexCenter.innerHTML = `
+        <div class="hex-center-title">${hexFacts[idx].title}</div>
+        <div class="hex-center-text">${hexFacts[idx].text}</div>
+      `;
+    });
+  });
+
+  const questions = [
+    {
+      weight: 5,
+      q: "Как Юлиан Бромлей определял природу этноса?",
+      options: [
+        "Как биологическую популяцию, зависящую от климата",
+        "Как устойчивую социально-культурную общность людей",
+        "Как временный политический союз государств"
+      ],
+      correct: 1,
+      explanation: "Бромлей рассматривал этнос как исторически сложившуюся социальную и культурную общность, а не биологический вид."
+    },
+    {
+      weight: 5,
+      q: "Что означает понятие «этникос» в узком смысле?",
+      options: [
+        "Всех представителей народа независимо от страны их проживания",
+        "Только граждан, живущих в столице государства",
+        "Экономическую систему одного региона"
+      ],
+      correct: 0,
+      explanation: "Этникос объединяет всех носителей языка, культуры и самосознания в любой точке мира."
+    },
+    {
+      weight: 6,
+      q: "Что такое этносоциальный организм (ЭСО)?",
+      options: [
+        "Часть этникоса, объединённая общей территорией, государством и экономикой",
+        "Диаспора, живущая за пределами исторической родины",
+        "Любое объединение людей по профессиональному признаку"
+      ],
+      correct: 0,
+      explanation: "ЭСО — это сочетание этнических признаков с единой территориальной, экономической и политической организацией."
+    },
+    {
+      weight: 6,
+      q: "Какой признак Бромлей считал главным индикатором принадлежности к этносу?",
+      options: [
+        "Группу крови и антропологический тип",
+        "Этническое самосознание (противопоставление «мы — они»)",
+        "Обязательное проживание в сельской местности"
+      ],
+      correct: 1,
+      explanation: "Именно самосознание фиксирует и удерживает границы между этносами даже при изменении быта."
+    },
+    {
+      weight: 7,
+      q: "Как называется процесс растворения малой этнической группы в более крупном народе с утратой своего языка?",
+      options: [
+        "Парциация",
+        "Ассимиляция",
+        "Интеграция"
+      ],
+      correct: 1,
+      explanation: "При ассимиляции группа полностью усваивает язык и культуру другого народа, теряя прежнюю идентичность."
+    },
+    {
+      weight: 7,
+      q: "В чём главное отличие интеграции от ассимиляции?",
+      options: [
+        "При интеграции народы сближаются в общем государстве, но сохраняют свои культуры",
+        "Интеграция возможна только при полном запрете родных языков",
+        "Никакого отличия между этими понятиями нет"
+      ],
+      correct: 0,
+      explanation: "Интеграция создаёт общие социальные связи без уничтожения культурного своеобразия участников."
+    },
+    {
+      weight: 8,
+      q: "Как называется процесс слияния нескольких близких по языку и культуре племён или групп в один народ?",
+      options: [
+        "Миксация",
+        "Консолидация",
+        "Парциация"
+      ],
+      correct: 1,
+      explanation: "Консолидация объединяет родственные этнические единицы в более крупный и монолитный этнос."
+    },
+    {
+      weight: 8,
+      q: "Что происходит при парциации?",
+      options: [
+        "Единый народ разделяется на несколько самостоятельных этнических частей",
+        "Несколько далёких народов объединяются в одну диаспору",
+        "Народ полностью меняет религию"
+      ],
+      correct: 0,
+      explanation: "Парциация — это разделение прежде единого этноса (например, при переселении части людей на новые земли)."
+    },
+    {
+      weight: 9,
+      q: "В чём заключался главный спор Бромлея со Львом Гумилёвым?",
+      options: [
+        "Бромлей объяснял развитие народов культурой и обществом, а Гумилёв — биологией и космической энергией",
+        "Бромлей отрицал существование языков, а Гумилёв изучал только словари",
+        "Они спорили исключительно о датах основания древних городов"
+      ],
+      correct: 0,
+      explanation: "Это противостояние социального (Бромлей) и естественно-биологического (Гумилёв) подходов к истории народов."
+    },
+    {
+      weight: 10,
+      q: "Семья переехала в другую страну, работает в местной экономике, но дома говорит на родном языке и сохраняет традиции. Как это описывает теория Бромлея?",
+      options: [
+        "Семья вышла из состава своего ЭСО, но осталась частью своего этникоса",
+        "Семья полностью вышла и из ЭСО, и из этникоса",
+        "Семья создала новый этносоциальный организм"
+      ],
+      correct: 0,
+      explanation: "Связь с государством и экономикой прежней страны (ЭСО) прервалась, но культурно-языковая связь (этникос) сохранилась."
+    },
+    {
+      weight: 14,
+      q: "В результате длительного взаимодействия на одной территории нескольких изначально неродственных народов возник совершенно новый этнос со своей культурой. Какой это процесс?",
+      options: [
+        "Миксация",
+        "Парциация",
+        "Консолидация"
+      ],
+      correct: 0,
+      explanation: "Миксация — образование нового этноса путём смешения неродственных этнических компонентов (в отличие от консолидации родственных групп)."
+    },
+    {
+      weight: 15,
+      q: "Почему по Бромлею исчезновение государства не всегда приводит к мгновенному исчезновению самого народа?",
+      options: [
+        "Потому что разрушается только ЭСО, а этникос продолжает жить через язык, память и самосознание",
+        "Потому что этнос поддерживается исключительно географическим рельефом",
+        "Потому что все граждане автоматически проходят ассимиляцию за один год"
+      ],
+      correct: 0,
+      explanation: "Дуализм модели объясняет устойчивость народов: потеря политической оболочки (ЭСО) не уничтожает культурное ядро (этникос)."
+    }
+  ];
+
+  let currentStep = 0;
+  const userAnswers = new Array(questions.length).fill(null);
+  let isFinished = false;
+
+  const quizContainer = document.getElementById('quizContainer');
+
+  function renderQuiz() {
+    if (isFinished) {
+      let totalScore = 0;
+      questions.forEach((item, idx) => {
+        if (userAnswers[idx] === item.correct) {
+          totalScore += item.weight;
+        }
+      });
+
+      let grade = 3;
+      let gradeComment = "Результат меньше 65% — стоит повторить основные термины.";
+      if (totalScore > 85) {
+        grade = 5;
+        gradeComment = "Результат больше 85% — отличное знание теории Бромлея.";
+      } else if (totalScore >= 65) {
+        grade = 4;
+        gradeComment = "Результат от 65% до 85% — хороший уровень понимания темы.";
+      }
+
+      quizContainer.innerHTML = `
+        <div class="result-screen">
+          <h3>Итог тестирования</h3>
+          <p>Набрано баллов: <strong>${totalScore} из 100</strong> (${totalScore}%)</p>
+          <div class="grade-badge">Оценка: ${grade}</div>
+          <p>${gradeComment}</p>
+
+          <table class="criteria-table">
+            <thead>
+              <tr>
+                <th>Баллы (проценты)</th>
+                <th>Оценка</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>&gt; 85% (86–100 баллов)</td>
+                <td><strong>5</strong></td>
+              </tr>
+              <tr>
+                <td>65% – 85% (65–85 баллов)</td>
+                <td><strong>4</strong></td>
+              </tr>
+              <tr>
+                <td>&lt; 65% (0–64 балла)</td>
+                <td><strong>3</strong></td>
+              </tr>
+            </tbody>
+          </table>
+
+          <button type="button" class="nav-btn primary" id="restartBtn">Пройти тест заново</button>
+        </div>
+      `;
+
+      document.getElementById('restartBtn').addEventListener('click', () => {
+        currentStep = 0;
+        userAnswers.fill(null);
+        isFinished = false;
+        renderQuiz();
+      });
+      return;
+    }
+
+    const item = questions[currentStep];
+    const selected = userAnswers[currentStep];
+    const answered = selected !== null;
+
+    let optionsHtml = '';
+    item.options.forEach((optText, optIdx) => {
+      let cls = 'option-btn';
+      if (answered) {
+        if (optIdx === item.correct) {
+          cls += ' correct';
+        } else if (optIdx === selected) {
+          cls += ' wrong';
+        }
+      }
+      optionsHtml += `<button type="button" class="${cls}" data-opt="${optIdx}" ${answered ? 'disabled' : ''}>${optText}</button>`;
+    });
+
+    const isLast = currentStep === questions.length - 1;
+
+    quizContainer.innerHTML = `
+      <div class="quiz-meta">
+        <span>Вопрос ${currentStep + 1} из ${questions.length}</span>
+        <span class="quiz-weight">Цена вопроса: ${item.weight} баллов</span>
+      </div>
+      <div class="quiz-question">${item.q}</div>
+      <div class="options-list">${optionsHtml}</div>
+      <div class="feedback-box ${answered ? 'visible' : ''}">
+        ${answered ? (selected === item.correct ? '<strong>Верно.</strong> ' : '<strong>Неверно.</strong> ') + item.explanation : ''}
+      </div>
+      <div class="quiz-nav">
+        <button type="button" class="nav-btn" id="prevBtn" ${currentStep === 0 ? 'disabled' : ''}>Предыдущий вопрос</button>
+        <button type="button" class="nav-btn primary" id="nextBtn" ${!answered ? 'disabled' : ''}>
+          ${isLast ? 'Завершить тест' : 'Следующий вопрос'}
+        </button>
+      </div>
+    `;
+
+    document.querySelectorAll('.option-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        userAnswers[currentStep] = Number(btn.getAttribute('data-opt'));
+        renderQuiz();
+      });
+    });
+
+    document.getElementById('prevBtn').addEventListener('click', () => {
+      if (currentStep > 0) {
+        currentStep--;
+        renderQuiz();
+      }
+    });
+
+    document.getElementById('nextBtn').addEventListener('click', () => {
+      if (currentStep < questions.length - 1) {
+        currentStep++;
+        renderQuiz();
+      } else {
+        isFinished = true;
+        renderQuiz();
+      }
+    });
+  }
+
+  renderQuiz();
+</script>
+
+</body>
+</html>
